@@ -1,0 +1,63 @@
+; Find the FWHM of a filter normalized to its maximum amplitude
+function fwhm, xint, yint
+
+	ind = sort(xint)
+	x = xint[ind]
+	y = yint[ind]
+	
+	y = y / max(y)
+	
+	n = n_elements(x)
+	xx = findgen(n)
+	
+	yprev = y[0]
+	ynext = y[1]
+	loop = 1
+	while (not(yprev lt 0.5 and ynext ge 0.5)) do begin
+		loop = loop + 1
+		yprev = ynext
+		ynext = y[loop]		
+	endwhile
+	left = interpol(x[loop-2:loop+2], y[loop-2:loop+2], 0.5)
+
+	yprev = y[n-1]
+	ynext = y[n-2]
+	loop = n-2
+	while (not(yprev lt 0.5 and ynext ge 0.5)) do begin
+		loop = loop - 1
+		yprev = ynext
+		ynext = y[loop]
+	endwhile
+	right = interpol(x[loop-2:loop+2], y[loop-2:loop+2], 0.5)
+
+	return, right-left
+end
+
+pro central_lambda
+	openr,2,'normalizations.dat'
+	readf,2,nfilters
+	str = ''
+	for i = 0, nfilters-1 do begin
+		readf,2,str		
+		res = strsplit(str,' ',/extract)
+		res2 = strsplit(res[0],"'",/extract)
+
+		maxim_filter = res[1]
+
+		file = res2+'.res'
+		openr,3,file
+		readf,3,ndat,normal
+		trans = dblarr(2,ndat)
+		readf,3,trans
+		close,3
+
+		lambda0 = tsum(trans[0,*],trans[1,*]*trans[0,*]) / tsum(trans[0,*],trans[1,*])
+
+		res = fwhm(trans[0,*], trans[1,*] / res[1])
+
+		print, res2 + ' &  '+strtrim(string(lambda0,FORMAT='(F7.3)'),2)+' & '+strtrim(string(res,FORMAT='(F8.2)'),2)+' \\'
+	endfor
+	close,2
+
+	
+end

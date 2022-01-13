@@ -1,0 +1,24 @@
+pro clean_filter
+; 	name = 'isaacJs.res'
+	name = 'sofiJs.res'
+
+	n = 0L
+	naxim = 0.d0
+	
+	openr,2,name
+	readf,2,n,maxim
+	dat = dblarr(2,n)
+	readf,2,dat
+	close,2
+
+	ind = uniq(dat[0,*])
+
+	fixed = dat[*,ind]
+
+	openw,2,name+'.fixed'
+	printf,2,n_elements(fixed[0,*]),maxim
+	printf,2,fixed
+	close,2
+
+	stop
+end
