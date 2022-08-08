@@ -6,6 +6,14 @@ from scipy.interpolate import RegularGridInterpolator
 from .tools import tobool
 from .codes import nenkova
 
+try:
+    import torch
+    from . import model_encoder
+    from . import model_nn
+    TORCH_PRESENT = True
+except:
+    TORCH_PRESENT = False
+
 class Models(object):
     def __init__(self, config, observations, verbose=False):              
 
@@ -23,7 +31,23 @@ class Models(object):
             self.n_parameters = len(self.parameter_names)
             self._read_nenkova()
             self.coefs = np.zeros(20)
-            
+
+        if (self.model_type == 'hoenig'):
+            if (TORCH_PRESENT):
+                self.parameter_names = ['a', 'n0', 'h', 'aw', 'theta_w', 'theta_sig', 'f_wd', 'rout', 'angle', 'shift', 'extinction', 'redshift']
+                self.default_limits = {'a': [-3,-0.5], 'n0': [5,10], 'h': [0.1,0.5], 'aw': [-2.5,-0.5],
+                    'theta_w':[30.0, 45.0], 'theta_sig': [7, 15], 'f_wd': [0.15, 2.25], 'rout': [450.0, 500.0], 'angle': [0, 90], 'shift': [-10,10], 'extinction': [0,5], 'redshift': [0,6]}
+                self.typical = {'a': -1.0, 'n0': 7.0, 'h': 0.3, 'aw': -1.5, 'theta_w': 35.0, 'theta_sig': 10.0, 'f_wd': 1.0, 'rout': 475.0, 'angle': 45.0,'shift': 1.0, 'extinction': 2.0, 'redshift': 0.0}
+                self.n_parameters = len(self.parameter_names)
+                
+                self.device = 'cpu'
+                
+                self._read_hoenig_neural()
+                self.min_n = -8.32
+                self.max_n = 5.66                
+            else:
+                raise Exception('Hoenig models cannot be used without PyTorch installed in your system.')
+
         self.extiction_law = config['general']['extinction law']
         self.use_agn = tobool(config['general']['use agn'])
 
@@ -272,6 +296,34 @@ class Models(object):
 
         if (self.verbose):
             print("Nenkova database read")
+
+    def _read_hoenig_neural(self):
+        
+        # Read frequency/wavelength data
+        path = str(__file__).split('/')
+        root = '/'.join(path[0:-1])
+        data_file = np.load(f"{root}/neural/datos_clumpy_parm_x.npz", allow_pickle=True)            
+        self.x_freq = data_file['x_freq']
+        self.base_wavelength = 10.0**data_file['x_ldo'].astype('float')
+
+        # Read interpolating NN            
+        checkpoint = f'{root}/neural/2021-10-19-13:04:24.pth'
+        chk = torch.load(checkpoint, map_location=lambda storage, loc: storage)
+        hyperparameters = chk['hyperparameters']
+        self.model = model_nn.Network(hyperparameters).to(self.device)
+        self.model.load_state_dict(chk['state_dict'])
+        self.model.eval()
+
+        # Read autoencoder
+        checkpoint = f'{root}/neural/2021-09-28-17:43:00.pth_encoder'
+        chk = torch.load(checkpoint, map_location=lambda storage, loc: storage)
+        hyperparameters = chk['hyperparameters']
+        self.model_encoder = model_encoder.Network(hyperparameters).to(self.device)
+        self.model_encoder.load_state_dict(chk['state_dict'])
+        self.model_encoder.eval()
+
+        if (self.verbose):
+            print("Hoenig model NN read")
         
     def prior_transform_nested(self, u):
         """Transforms samples `u` drawn from the unit cube to samples to those
@@ -302,13 +354,58 @@ class Models(object):
 
         return sed
 
+    def hoenig_sed(self, x):
+        xin = np.copy(x)
+        
+        xin[0] = (x[0] - self.default_limits['a'][0]) / (self.default_limits['a'][1] - self.default_limits['a'][0])
+        xin[1] = (x[1] - self.default_limits['n0'][0]) / (self.default_limits['n0'][1] - self.default_limits['n0'][0])
+        xin[2] = (x[2] - self.default_limits['h'][0]) / (self.default_limits['h'][1] - self.default_limits['h'][0])
+        xin[3] = (x[3] - self.default_limits['aw'][0]) / (self.default_limits['aw'][1] - self.default_limits['aw'][0])
+        xin[4] = (x[4] - self.default_limits['theta_w'][0]) / (self.default_limits['theta_w'][1] - self.default_limits['theta_w'][0])
+        xin[5] = (x[5] - self.default_limits['theta_sig'][0]) / (self.default_limits['theta_sig'][1] - self.default_limits['theta_sig'][0])
+        xin[6] = (x[6] - self.default_limits['f_wd'][0]) / (self.default_limits['f_wd'][1] - self.default_limits['f_wd'][0])
+        xin[7] = (x[7] - self.default_limits['rout'][0]) / (self.default_limits['rout'][1] - self.default_limits['rout'][0])
+        xin[8] = (x[8] - self.default_limits['angle'][0]) / (self.default_limits['angle'][1] - self.default_limits['angle'][0])
+
+        inp_tau_cl = 1.
+        inp_dist = 0.
+        
+        # Order of inputs when training
+        inp_values = np.array((xin[0],xin[1],xin[2],xin[3],xin[4],xin[5],xin[6],xin[7],inp_tau_cl,inp_dist,xin[8]))
+
+        with torch.no_grad():        
+            # We transform the input from Numpy to PyTorch tensor
+            inputs = torch.tensor(inp_values.astype('float32')).to(self.device)
+            out_nn = self.model(inputs)        
+
+        # Format to apply decoder (and recover the parameter stratification)
+        out_nn_t = out_nn.unsqueeze(1).unsqueeze(0)
+
+        # Applying the decoder on the predicted values by the NN
+        # We only need the forward pass, so we do not accumulate gradients
+        with torch.no_grad():            
+            inputs = out_nn_t.to(self.device)
+            out_de = self.model_encoder.decoder(inputs)
+
+        # Convert to array
+        # We bring the result to the CPU (if it was on the GPU) and transform to Numpy
+        out_de_n = out_de.cpu().numpy()
+
+        out = out_de_n[0, 0, :] * (self.max_n - self.min_n) + self.min_n
+
+        # I still need to find where this 1e6 is coming from. It is needed for a proper comparison with Nenkova models
+        return 10.0**out / 1e6
+
     def loglike(self, x, only_synth=False):
-
-        # x = np.array([50.0, 30.0, 8.0, 2.0, 50.0, 45.0, -0.5, 0.4, 0.2])
-
+        
+        # Given in lambda*F_lambda (equivalent to nu*F_nu)
         if (self.model_type == 'nenkova'):        
             sed = self.nenkova_sed(x[0:6])
-        
+
+        # Given in nu*F_nu (equivalent to lambda*F_lambda)
+        if (self.model_type == 'hoenig'):
+            sed = self.hoenig_sed(x[0:9])
+
         # y : [5,100]
         # sigma: [15,70]
         # n: [1,15]
@@ -319,7 +416,7 @@ class Models(object):
         # Add AGN if desired
         if (self.use_agn):
             sed += self._agn(self.base_wavelength)
-
+        
         # Tranform to Jansky
         sed *= (self.base_wavelength * 1e-4 / 2.99792458e10) / 1e-26
 
@@ -332,7 +429,7 @@ class Models(object):
         chi2 = 0.0
 
         if (only_synth):
-            sed = np.interp(self.base_wavelength, self.base_wavelength * (1.0 + x[8]), sed)            
+            sed = np.interp(self.base_wavelength, self.base_wavelength * (1.0 + x[8]), sed)
             return sed
 
         # Now synthesize the flux in the photometric filters
