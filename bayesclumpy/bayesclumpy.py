@@ -171,7 +171,9 @@ class Bayesclumpy(object):
 
         fig, ax = pl.subplots()
         ax.plot(wave, seds.T, alpha=0.02, color='C1')
-        ax.errorbar(self.obs.obs_wave, self.obs.obs_flux, fmt='o', capsize=3, elinewidth=2, yerr=self.obs.obs_sigma, color='C0')
+        ax.errorbar(self.obs.obs_wave[0:self.obs.n_filters], self.obs.obs_flux[0:self.obs.n_filters], fmt='o', capsize=3, elinewidth=2, yerr=self.obs.obs_sigma[0:self.obs.n_filters], color='C0')
+        if (self.obs.n_spec != 0):
+            ax.errorbar(self.obs.obs_wave[-1], self.obs.obs_flux[-1], fmt='o', capsize=3, elinewidth=2, yerr=self.obs.obs_sigma[-1], color='C2')
         
         ax.set_xscale('log')
         ax.set_yscale('log')

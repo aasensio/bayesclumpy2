@@ -451,7 +451,7 @@ class Models(object):
             # apply the redshift locally to the filter            
             sed_filter = np.interp(self.obs.obs_wave[-1], self.base_wavelength * (1.0 + x[8]), sed)
 
-            chi2 += np.sum( (self.obs.obs_flux[-1] - syn_flux)**2 / self.obs.obs_sigma[-1]**2)
+            chi2 += np.sum( (self.obs.obs_flux[-1] - sed_filter)**2 / self.obs.obs_sigma[-1]**2)
 
         loglike = -0.5 * chi2
 
