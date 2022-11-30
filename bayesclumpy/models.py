@@ -421,15 +421,15 @@ class Models(object):
         sed *= (self.base_wavelength * 1e-4 / 2.99792458e10) / 1e-26
 
         # Apply extinction curve
-        sed *= self._extiction_curve(self.extiction_law, self.base_wavelength, x[7])
+        sed *= self._extiction_curve(self.extiction_law, self.base_wavelength, x[-2])
 
         # Normalize to 1e10 and apply shift
-        sed *= 10.0**x[6] / 1e10
+        sed *= 10.0**x[-3] / 1e10
         
         chi2 = 0.0
 
         if (only_synth):
-            sed = np.interp(self.base_wavelength, self.base_wavelength * (1.0 + x[8]), sed)
+            sed = np.interp(self.base_wavelength, self.base_wavelength * (1.0 + x[-1]), sed)
             return sed
 
         # Now synthesize the flux in the photometric filters
@@ -437,7 +437,7 @@ class Models(object):
 
             # Interpolate the synthetic SED to the wavelength in the filter and
             # apply the redshift locally to the filter
-            sed_filter = np.interp(self.obs.transmission[i][0, :], self.base_wavelength * (1.0 + x[8]), sed)
+            sed_filter = np.interp(self.obs.transmission[i][0, :], self.base_wavelength * (1.0 + x[-1]), sed)
 
             # Compute flux in the filter (the filter is already normalized to unit area)
             syn_flux = np.trapz(sed_filter * self.obs.transmission[i][1, :], self.obs.transmission[i][0, :])
@@ -449,7 +449,7 @@ class Models(object):
 
             # Interpolate the synthetic SED to the wavelength in the spectroscopic range and
             # apply the redshift locally to the filter            
-            sed_filter = np.interp(self.obs.obs_wave[-1], self.base_wavelength * (1.0 + x[8]), sed)
+            sed_filter = np.interp(self.obs.obs_wave[-1], self.base_wavelength * (1.0 + x[-1]), sed)
 
             chi2 += np.sum( (self.obs.obs_flux[-1] - sed_filter)**2 / self.obs.obs_sigma[-1]**2)
 
