@@ -27,7 +27,7 @@ class Models(object):
             self.default_limits = {'y': [5,100], 'sigma': [15,70], 'n': [1,15], 'q': [0,3],
                 'tauv':[10, 300], 'i': [0,90], 'shift': [-10,10], 'extinction': [0,5], 'redshift': [0,6]}
             self.typical = {'y': 30.0, 'sigma': 30.0, 'n': 5, 'q': 2.0,
-                'tauv': 50.0, 'i': 45.0, 'shift': 1.0, 'extinction': 2.0, 'redshift': 0.0}
+                'tauv': 50.0, 'i': 45.0, 'shift': 1.0, 'extinction': 2.0, 'redshift': 0.1}
             self.n_parameters = len(self.parameter_names)
             self._read_nenkova()
             self.coefs = np.zeros(20)

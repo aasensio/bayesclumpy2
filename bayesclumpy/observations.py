@@ -129,8 +129,9 @@ class Observation(object):
         if (self.verbose):
             print(f'OBSERVATIONS')
             print(f'Name : {self.name}')
-            print(f'Photometry : ')
-
+            if (self.n_filters > 0):
+                print(f'Photometry : ')
+        
         for ifilter in range(self.n_filters):
             filter = self.filter[ifilter]
             
@@ -173,7 +174,7 @@ class Observation(object):
         if (self.verbose):
             if (self.n_spec != 0):
                 print(f'Spectroscopy : ')
-                print(f"  * {self.filter[ifilter+1]:10s} -> n = {self.n_spec}")
+                print(f"  * {self.filter[0]:10s} -> n = {self.n_spec}")
 
 if __name__ == '__main__':
 
