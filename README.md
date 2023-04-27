@@ -53,7 +53,7 @@ method. This generates a `FITS` file with the MCMC sampling.
 You can then do posterior checks and plot the posterior by using
 
     bc.corner('output.fits', pdf='corner.pdf')
-    bc.posterior_check('output.fits', pdf='posterio_check.pdf')
+    bc.posterior_check('output.fits', pdf='posterior_check.pdf')
 
 Everything is controlled from a
 human-readable configuration file.
