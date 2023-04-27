@@ -148,7 +148,7 @@ class Bayesclumpy(object):
         tmp = np.loadtxt('sample.sample')
         inspect(tmp)
 
-    def corner(self, bc_file):
+    def corner(self, bc_file, pdf=None):
 
         self.f = fits.open(bc_file)
 
@@ -162,7 +162,10 @@ class Bayesclumpy(object):
             levels=(0.68,)
             )
 
-    def posterior_check(self, bc_file):
+        if pdf is not None:
+            pl.savefig(pdf, format='pdf', bbox_inches='tight', dpi=300)
+
+    def posterior_check(self, bc_file, pdf=None):
 
         self.f = fits.open(bc_file)
 
@@ -179,6 +182,9 @@ class Bayesclumpy(object):
         ax.set_yscale('log')
         ax.set_xlabel(u'Wavelength [\u03bcm]')
         ax.set_ylabel(u'Flux [Jy]')
+
+        if pdf is not None:
+            pl.savefig(pdf, format='pdf', bbox_inches='tight', dpi=300)
 
 
         

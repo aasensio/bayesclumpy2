@@ -41,7 +41,21 @@ Now install the package into the environment by typing:
 
 ## Usage
 
-There is an example of usage in the directory `example`. Everything is controlled from a
+There is an example of usage in the directory `example`. The sampling is done with the following
+three lines. First import `bayesclumpy`, instantiate the `Bayesclumpy` class and call the `sample()`
+method. This generates a `FITS` file with the MCMC sampling.
+
+
+    import bayesclumpy as bc
+    bc = bayesclumpy.Bayesclumpy('conf.ini')
+    bc.sample()
+
+You can then do posterior checks and plot the posterior by using
+
+    bc.corner('output.fits', pdf='corner.pdf')
+    bc.posterior_check('output.fits', pdf='posterio_check.pdf')
+
+Everything is controlled from a
 human-readable configuration file.
 
     
