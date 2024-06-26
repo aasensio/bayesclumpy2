@@ -46,7 +46,7 @@ three lines. First import `bayesclumpy`, instantiate the `Bayesclumpy` class and
 method. This generates a `FITS` file with the MCMC sampling.
 
 
-    import bayesclumpy as bc
+    import bayesclumpy
     bc = bayesclumpy.Bayesclumpy('conf.ini')
     bc.sample()
 
