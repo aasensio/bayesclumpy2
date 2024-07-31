@@ -77,7 +77,7 @@ human-readable configuration file.
     tauv       = uniform(10,150)
     i          = uniform(0,90)
     shift      = uniform(-3,3)
-    extinction = uniform(0,5)
+    extinction = range(0,8) uniform(0,5)
     redshift   = uniform(0.0,0.01)
 
 The `General` section defines:
@@ -95,7 +95,9 @@ The `Observations` section defines:
 - `File`: file with the observations. See the examples for guidance.
 
 The `Priors` section defines the prior for each parameter of each specific model. Priors can
-be [`uniform`/`normal`/`dirac`]
+be [`uniform`/`normal`/`dirac`]. It can also contain a `range` keyword to define the range of
+definition of the variable. This should not be used  with those variables that are input to the
+models, which have predefined ranges that are hardwired in Bayesclumpy v2.0.
 
 ## Observations
 
