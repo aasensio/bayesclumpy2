@@ -18,6 +18,10 @@ import numpy
 
 def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
     compiler_so = self.compiler_so
+    
+    # Turn off machine-specific optimizations
+    compiler_so = [x for x in compiler_so if "marc" not in x and "mtune" not in x]
+        
     arch = platform.architecture()[0].lower()
     if (ext == ".f" or ext == ".f90"):
         if sys.platform == 'darwin' or sys.platform.startswith('linux'):
@@ -34,6 +38,7 @@ def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
             else:
                 print("\nPlatform has architecture '%s' which is unknown to "
                       "the setup script. Proceed with caution\n" % arch)
+                    
     try:
         self.spawn(compiler_so + cc_args + [src, '-o', obj] +
                    extra_postargs)
