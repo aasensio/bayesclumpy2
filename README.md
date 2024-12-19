@@ -25,7 +25,7 @@ Within an Anaconda environment, standard packages can be installed with
 
     conda create -n bayesclumpy
     conda activate bayesclumpy
-    conda install -c conda-forge cython numpy astropy tqdm scipy gfortran_linux-64 gcc_linux-64 nestle matplotlib configobj pysimplegui corner
+    conda install -c conda-forge cython numpy astropy tqdm scipy gfortran_linux-64 gcc_linux-64 nestle matplotlib configobj pysimplegui corner setuptools
 
 ### For a Mac OS
 
@@ -33,7 +33,7 @@ Within an Anaconda environment, standard packages can be installed with
 
     conda create -n bayesclumpy
     conda activate bayesclumpy
-    conda install -c conda-forge cython numpy astropy tqdm scipy gfortran nestle matplotlib configobj pysimplegui corner
+    conda install -c conda-forge cython numpy astropy tqdm scipy gfortran nestle matplotlib configobj pysimplegui corner setuptools
 
 You should close now the environment and the terminal so that a few variables are
 set automatically the next time you open a terminal and the newly created environment.
