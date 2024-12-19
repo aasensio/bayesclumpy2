@@ -23,7 +23,7 @@ Anyway, feel free to use the gfortran compiler from your system but you might ha
 
 Within an Anaconda environment, standard packages can be installed with
 
-    conda create -n bayesclumpy python=3.8
+    conda create -n bayesclumpy
     conda activate bayesclumpy
     conda install -c conda-forge cython numpy astropy tqdm scipy gfortran_linux-64 gcc_linux-64 nestle matplotlib configobj pysimplegui corner
 
@@ -31,13 +31,15 @@ Within an Anaconda environment, standard packages can be installed with
 
 Within an Anaconda environment, standard packages can be installed with
 
-    conda create -n bayesclumpy python=3.8
+    conda create -n bayesclumpy
     conda activate bayesclumpy
-    conda install -c conda-forge cython numpy astropy tqdm scipy gfortran_osx-64 gcc_osx-64 nestle matplotlib configobj pysimplegui corner
+    conda install -c conda-forge cython numpy astropy tqdm scipy gfortran nestle matplotlib configobj pysimplegui corner
 
-Now install the package into the environment by typing:
+You should close now the environment and the terminal so that a few variables are
+set automatically the next time you open a terminal and the newly created environment.
+Then install the package into the environment by typing:
 
-    pip install -vv -e .
+    python setup.py install 
 
 ## Usage
 
