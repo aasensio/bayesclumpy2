@@ -25,7 +25,7 @@ Within an Anaconda environment, standard packages can be installed with
 
     conda create -n bayesclumpy
     conda activate bayesclumpy
-    conda install -c conda-forge cython numpy astropy tqdm scipy gfortran_linux-64 gcc_linux-64 nestle matplotlib configobj pysimplegui corner setuptools
+    conda install -c conda-forge cython numpy astropy tqdm scipy gfortran gcc nestle matplotlib configobj pysimplegui corner setuptools
 
 ### For a Mac OS
 
@@ -40,6 +40,10 @@ set automatically the next time you open a terminal and the newly created enviro
 Then install the package into the environment by typing:
 
     python setup.py install 
+
+## Hoenig models
+The disc+wind models of Hoenig & Kishimoto (2017) are implemented via a neural network. To use these models, you
+need to install PyTorch following the standard procedure found [here](https://pytorch.org/). 
 
 ## Usage
 
@@ -84,7 +88,7 @@ human-readable configuration file.
 
 The `General` section defines:
 
-- `Models`: set of models to use during inference. Only `Nenkova` is admitted now but we will include more models in the near future.
+- `Models`: set of models to use during inference. `Nenkova` or `Hoenig` are admitted now but we will include more models in the near future.
 - `Sampler`: specific posterior sampling algorithm [`nestle`/`dynesty`/`ultranest`]. At least
 one of them should be installed. In our experience, the nested sampler `nestle` works
 nicely.
