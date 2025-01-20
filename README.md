@@ -3,8 +3,8 @@
 ## Introduction
 
 BayesClumpy is a computer program that can be used for the fast synthesis of spectral 
-energy distributions (SED) emerging from clumpy dusty torus models. For the moment,
-only the models developed by the Kentucky group are included. 
+energy distributions (SED) emerging from clumpy dusty torus models. 
+For the moment, the clumpy models of Nenkova et al. (2008) and the disc+wind models of Hoenig & Kishimoto (2017) are included.
 The fundamental advantage of the code is that these fast synthesis capabilities are used in a 
 Bayesian scheme for carrying out inference over the model parameters for observed SED. The code 
 is written in standard Fortran 90 and Python.
