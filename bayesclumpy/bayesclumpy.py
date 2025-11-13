@@ -3,7 +3,7 @@ from configobj import ConfigObj
 from .observations import Observation
 from .models import Models
 from .tools import _lower_to_sep
-from .gui import inspect
+# from .gui import inspect
 from tqdm import tqdm
 from astropy.io import fits
 import corner
@@ -32,6 +32,12 @@ try:
 except:
     NESTLE_PRESENT = False
 
+try:
+    import reddemcee
+    REDDEMCEE_PRESENT = True
+except:
+    REDDEMCEE_PRESENT = False
+
 
 class Bayesclumpy(object):
 
@@ -58,6 +64,10 @@ class Bayesclumpy(object):
             self.algorithms.append('nestle')
             if (verbose):
                 print(" - nestle (found)")
+        if (REDDEMCEE_PRESENT):
+            self.algorithms.append('reddemcee')
+            if (verbose):
+                print(" - RedDemecee (found)")
 
         if (len(self.algorithms) == 0):
             raise Exception("No sampler available.")
@@ -84,6 +94,8 @@ class Bayesclumpy(object):
     
     def sample(self):        
         sampler_name = self.config['general']['sampler']
+
+        self.logz = None
         
         if (self.verbose):
             print(f"SAMPLING with {sampler_name}")
@@ -103,6 +115,7 @@ class Bayesclumpy(object):
         if (sampler_name == 'nestle'):
             self.sampler = nestle.sample(self.models.loglike, self.models.prior_transform_nested, self.models.n_parameters, method='multi', callback=nestle.print_progress)
             self.samples = nestle.resample_equal(self.sampler.samples, self.sampler.weights)
+            self.logz = self.sampler.logz
             
         if (sampler_name == 'emcee'):
             
@@ -121,6 +134,53 @@ class Bayesclumpy(object):
             for i, (k, v) in enumerate(self.models.typical.items()):
                 self.samples[:, i] *= self.models.typical[k]
 
+        if (sampler_name == 'reddemcee'):
+            
+            smd_const = np.concatenate([np.diff(limits) for limits in self.models.limits.values()])
+            
+            ntemps = 8
+            nsweeps = 1000
+            nsteps = 1
+            burnin = nsweeps // 2
+
+            # Initial solution (center of the interval)
+            center = np.array([self.models.central[key] for key in self.models.parameter_names])
+            if (self.verbose):
+                print(f"Initial solution : {center}")
+            self.nwalkers = 32            
+            pos = center + 1e-4 * np.abs(np.random.randn(ntemps, self.nwalkers, self.models.n_parameters))
+            
+            mybetas = list(np.geomspace(1, 0.0001, ntemps))
+            mybetas[-1] = 0
+
+            self.sampler = reddemcee.PTSampler(self.nwalkers, 
+                                               self.models.n_parameters, 
+                                               self.models.loglike,
+                                               self.models.logprior_emcee,
+                                               ntemps=ntemps,
+                                               adapt_tau=100,  # nsweeps/10
+                                               adapt_nu=0.64,  # nwalkers/100
+                                               adapt_mode=0,   # SAR
+                                               betas=mybetas,
+                                               backend=None,
+                                               smd_history=True,  # save swap mean distance
+                                               tsw_history=True,  # save temp swap rate
+            )
+
+            self.sampler._swap_move.D_ = smd_const
+
+            self.sampler.run_mcmc(pos,                                   
+                                  nsweeps=burnin, 
+                                  nsteps=nsteps,
+                                  progress=True)
+                        
+            self.samples = self.sampler.get_chain(discard=burnin, thin=5, flat=True)[-1, ...]
+
+            for i, (k, v) in enumerate(self.models.typical.items()):
+                self.samples[:, i] *= self.models.typical[k]
+
+            self.logz, _ = self.sampler.get_evidence_ss(discard=burnin)
+
         self.get_samples_sed()
 
     def get_samples_sed(self):
@@ -134,10 +194,12 @@ class Bayesclumpy(object):
             for k2, v2 in self.config[k].items():
                 label = k2.replace(' ','')
                 header[label[0:8]] = f'{v2}'
+            
+        header['LOGZ'] = f'{self.logz}'
 
         hdu1 = fits.PrimaryHDU(self.samples, header=header)
         hdu2 = fits.ImageHDU(self.models.base_wavelength)
-        hdu3 = fits.ImageHDU(seds)        
+        hdu3 = fits.ImageHDU(seds)
         hdul = fits.HDUList([hdu1, hdu2, hdu3])
         hdul.writeto(self.config['general']['output file'], overwrite=True)
 

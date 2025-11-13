@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.stats import norm
-from scipy.optimize import root
+import scipy.optimize
 from scipy.special import erf
 
 def fun(s, l, confidence):
@@ -90,7 +90,7 @@ class Observation(object):
                     sigma = float(sigma)
                     
                     s0 = np.sqrt(flux)
-                    tmp = root(fun, s0, args=(flux, sigma))
+                    tmp = scipy.optimize.root(fun, s0, args=(flux, sigma))
                     
                     self.obs_flux[loop] = flux
                     self.obs_sigma[loop] = tmp.x[0]
