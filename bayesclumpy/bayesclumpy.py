@@ -220,7 +220,7 @@ class Bayesclumpy(object):
             smooth=1, 
             smooth1d=1, 
             labels = self.models.parameter_names, 
-            quantiles=(0.16, 0.84), 
+            quantiles=(0.16, 0.50, 0.84),
             levels=(0.68,)
             )
 
@@ -235,8 +235,24 @@ class Bayesclumpy(object):
         seds = self.f[2].data
 
         fig, ax = pl.subplots()
-        ax.plot(wave, seds.T, alpha=0.02, color='C1')
-        ax.errorbar(self.obs.obs_wave[0:self.obs.n_filters], self.obs.obs_flux[0:self.obs.n_filters], fmt='o', capsize=3, elinewidth=2, yerr=self.obs.obs_sigma[0:self.obs.n_filters], color='C0')
+        ax.plot(wave, seds.T, alpha=0.02, color='C1')        
+        
+        uplims = np.array([self.obs.type_uncertainty[i] == 'upper' for i in range(self.obs.n_filters)])
+        standard = np.array([self.obs.type_uncertainty[i] == 'normal' for i in range(self.obs.n_filters)])
+        
+        ind = np.where(standard)[0]
+        if len(ind) > 0:
+            x = np.array(self.obs.obs_wave[0:self.obs.n_filters])
+            y = np.array(self.obs.obs_flux[0:self.obs.n_filters])
+            err = np.array(self.obs.obs_sigma[0:self.obs.n_filters])
+            ax.errorbar(x[ind], y[ind], fmt='o', capsize=3, elinewidth=2, yerr=err[ind], color='C0')
+
+        ind = np.where(uplims)[0]        
+        if len(ind) > 0:
+            x = np.array(self.obs.obs_wave[0:self.obs.n_filters])
+            y = np.array(self.obs.obs_flux[0:self.obs.n_filters])
+            ax.errorbar(x[ind], y[ind], fmt='o', capsize=3, elinewidth=2, yerr=0.5*y, color='C0', uplims=uplims)
+
         if (self.obs.n_spec != 0):
             ax.errorbar(self.obs.obs_wave[-1], self.obs.obs_flux[-1], fmt='o', capsize=3, elinewidth=2, yerr=self.obs.obs_sigma[-1], color='C2')
         

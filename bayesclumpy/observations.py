@@ -59,7 +59,7 @@ class Observation(object):
                 self.obs_sigma = [None] * self.n_filters
                 self.type_uncertainty = [None] * self.n_filters
                 self.type = [None] * self.n_filters
-                self.obs_wave = [None] * self.n_filters
+                self.obs_wave = [None] * self.n_filters                
             else:
                 self.transmission = [None] * (self.n_filters + 1)
                 self.filter = [None] * (self.n_filters + 1)
@@ -67,7 +67,7 @@ class Observation(object):
                 self.obs_sigma = [None] * (self.n_filters + 1)
                 self.type_uncertainty = [None] * (self.n_filters + 1)
                 self.type = [None] * (self.n_filters + 1)
-                self.obs_wave = [None] * (self.n_filters + 1)
+                self.obs_wave = [None] * (self.n_filters + 1)                
 
             loop = 0
             # Read photometry
@@ -85,7 +85,7 @@ class Observation(object):
                 # If the measurement is an upper limit, given a confidence level (0.68, 0.95, etc.)
                 # the integral between 0 and the tabulated value is 0.68, 0.95, etc. times
                 if ('<' in flux):
-                    self.type_uncertainty.append('upper')
+                    self.type_uncertainty[loop] = 'upper'
                     flux = float(flux.replace('<', ''))
                     sigma = float(sigma)
                     
