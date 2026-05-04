@@ -180,10 +180,10 @@ class Models(object):
         agn[ind] = const
 
         ind = np.where((wavelength > lambdau) & (wavelength <= lambdaRJ))[0]
-        agn[ind] = const * wavelength**(-p) / lambdau**(-p)
+        agn[ind] = const * wavelength[ind]**(-p) / lambdau**(-p)
 
         ind = np.where(wavelength > lambdaRJ)[0]
-        agn[ind] = const * lambdaRJ**(-p) / lambdau**(-p) * wavelength**(-3) / lambdaRJ**(-3)
+        agn[ind] = const * lambdaRJ**(-p) / lambdau**(-p) * wavelength[ind]**(-3) / lambdaRJ**(-3)
 
         return agn
 
