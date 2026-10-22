@@ -187,6 +187,34 @@ class Models(object):
 
         return agn
 
+    def _agn_hoenig(self, wavelength):
+    
+        n = len(wavelength)
+
+        lambdah = 0.03
+        lambdau = 0.3
+        lambdaRJ = 3.0
+        p = 4.0/3.0    
+
+        # Obtained by forcing the area under the curve to be equal to 1e46 erg/s
+        # see agn/check.py for details
+        const = 2.4389e5
+        
+        agn = np.zeros(n)
+        ind = np.where(wavelength <= lambdah)[0]    
+        agn[ind] = const * wavelength[ind] / lambdah
+    
+        ind = np.where((wavelength > lambdah) & (wavelength <= lambdau))[0]    
+        agn[ind] = const
+    
+        ind = np.where((wavelength > lambdau) & (wavelength <= lambdaRJ))[0]
+        agn[ind] = const * wavelength[ind]**(-p) / lambdau**(-p)
+        
+        ind = np.where(wavelength > lambdaRJ)[0]    
+        agn[ind] = const * lambdaRJ**(-p) / lambdau**(-p) * wavelength[ind]**(-3) / lambdaRJ**(-3)
+
+        return agn
+
     def _parse_prior(self, priors):
 
         # Read priors
