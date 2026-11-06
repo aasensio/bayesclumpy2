@@ -234,7 +234,7 @@ class Models(object):
             # Extract the range of parameters (if given) and check that they
             # are inside the defined interval. If not, fallback to the pre-defined
             # in the database
-            tmp = re.findall('range\((.+?)\)', value)
+            tmp = re.findall(r'range\((.+?)\)', value)
             if (len(tmp) == 0):
                 self.limits[key] = self.default_limits[key]
             else:
@@ -245,7 +245,7 @@ class Models(object):
                 self.type[key] = 'uniform'
 
                 # Extract limits of the uniform prior
-                tmp = re.findall('uniform\((.+?)\)', value)
+                tmp = re.findall(r'uniform\((.+?)\)', value)
                 prior_values = [float(i) for i in tmp[0].split(',')]
 
                 # Check that the limits of the uniform prior are not outside of the range
@@ -268,7 +268,7 @@ class Models(object):
                 self.type[key] = 'normal'
 
                 # Extract limits of the uniform prior
-                tmp = re.findall('normal\((.+?)\)', value)
+                tmp = re.findall(r'normal\((.+?)\)', value)
                 prior_values = [float(i) for i in tmp[0].split(',')]
                 
                 # Define the prior properties, using a truncated normal                
@@ -285,7 +285,7 @@ class Models(object):
                 self.type[key] = 'dirac'
 
                 # Extract limits of the uniform prior
-                tmp = re.findall('dirac\((.+?)\)', value)                
+                tmp = re.findall(r'dirac\((.+?)\)', value)                
                 prior_values = [float(tmp[0]), 0.01*self.typical[key]]
                 
                 # Define the prior properties, using a truncated normal                
@@ -468,7 +468,7 @@ class Models(object):
             sed_filter = np.interp(self.obs.transmission[i][0, :], self.base_wavelength * (1.0 + x[-1]), sed)
 
             # Compute flux in the filter (the filter is already normalized to unit area)
-            syn_flux = np.trapz(sed_filter * self.obs.transmission[i][1, :], self.obs.transmission[i][0, :])
+            syn_flux = np.trapezoid(sed_filter * self.obs.transmission[i][1, :], self.obs.transmission[i][0, :])
         
             chi2 += (self.obs.obs_flux[i] - syn_flux)**2 / self.obs.obs_sigma[i]**2
         

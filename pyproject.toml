@@ -1,17 +1,17 @@
 [build-system]
-#requires = ["setuptools>=61.0", "cython", "numpy"]
-requires = ["setuptools", "cython", "numpy"]
-build-backend = "setuptools.build_meta"
+requires = ["meson-python", "cython>=3.0", "numpy>=2.0"]
+build-backend = "mesonpy"
 
 [project]
 name = "bayesclumpy2"
-#version = "2025.10.03"
+version = "2.0"
 authors = [
   { name="A. Asensio Ramos", email="andres.asensio@iac.es" },
 ]
 description = "Bayesclumpy2"
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.9"
+keywords = ["Bayesclumpy"]
 classifiers = [
     'Development Status :: 4 - Beta',
     'Environment :: Console',
@@ -20,15 +20,24 @@ classifiers = [
     "Operating System :: Unix",
     "Operating System :: POSIX",
     "Operating System :: MacOS",
-    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+    'License :: OSI Approved :: MIT License',
     'Programming Language :: Python',
-    "Programming Language :: Python :: 3.4",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: Implementation :: CPython",
     'Topic :: Scientific/Engineering',
     'Topic :: Scientific/Engineering :: Physics',
 ]
-dynamic = ["license", "keywords", "dependencies", "version"]
+dependencies = [
+    "astropy",
+    "configobj",
+    "corner",
+    "matplotlib",
+    "nestle",
+    "numpy>=2.0",
+    "scipy",
+    "tqdm",
+]
 
-[tool.setuptools_scm]
-# can be empty if no extra settings are needed, presence enables setuptools-scm
-
+[project.optional-dependencies]
+hoenig = ["torch"]
+samplers = ["dynesty", "emcee", "reddemcee", "ultranest"]

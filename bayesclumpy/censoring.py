@@ -25,5 +25,5 @@ fig, ax = pl.subplots()
 cdf = norm.cdf((l - f) / s)
 ax.plot(f, cdf)
 
-print(np.trapz(cdf, f))
-print(np.trapz(cdf[0:n//2], f[0:n//2]) / np.trapz(cdf, f))
+print(np.trapezoid(cdf, f))
+print(np.trapezoid(cdf[0:n//2], f[0:n//2]) / np.trapezoid(cdf, f))

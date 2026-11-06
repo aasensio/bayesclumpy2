@@ -156,13 +156,13 @@ class Observation(object):
             T = T[:, ind]
 
             # Area normalization
-            area = np.trapz(T[1, :], x=T[0, :])
+            area = np.trapezoid(T[1, :], x=T[0, :])
             T[1, :] /= area
 
             self.transmission[ifilter] = T
 
             # Compute central wavelength
-            self.obs_wave[ifilter] = np.trapz(T[0, :] * T[1, :], x=T[0, :])
+            self.obs_wave[ifilter] = np.trapezoid(T[0, :] * T[1, :], x=T[0, :])
 
             if (self.verbose):
                 if (self.type[ifilter] == 'phot'):

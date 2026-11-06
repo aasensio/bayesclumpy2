@@ -25,7 +25,7 @@ Within an Anaconda environment, standard packages can be installed with
 
     conda create -n bayesclumpy
     conda activate bayesclumpy
-    conda install -c conda-forge cython numpy astropy tqdm scipy gfortran gcc nestle matplotlib configobj pysimplegui corner setuptools
+    conda install -c conda-forge cython numpy astropy tqdm scipy gfortran gcc nestle matplotlib configobj pysimplegui corner meson-python
 
 ### For a Mac OS
 
@@ -33,13 +33,37 @@ Within an Anaconda environment, standard packages can be installed with
 
     conda create -n bayesclumpy
     conda activate bayesclumpy
-    conda install -c conda-forge cython numpy astropy tqdm scipy gfortran nestle matplotlib configobj pysimplegui corner setuptools
+    conda install -c conda-forge cython numpy astropy tqdm scipy gfortran nestle matplotlib configobj pysimplegui corner meson-python
 
 You should close now the environment and the terminal so that a few variables are
 set automatically the next time you open a terminal and the newly created environment.
 Then install the package into the environment by typing:
 
-    python setup.py install 
+    pip install .
+
+Compilation requires `meson-python`, which is included in the conda commands above. `pip install .` 
+also fetches it automatically into a temporary build environment; it only has to be installed by hand 
+(`pip install meson-python ninja cython numpy`) when building with `--no-build-isolation`.
+
+A Fortran compiler is also needed. `gfortran` is found automatically if it is in your `PATH`; 
+to use a different compiler, set the `FC` environment variable (e.g., `FC=ifort pip install .`).
+
+The `nestle` sampler is installed by default. The other samplers and the dependencies of the 
+Hoenig models are optional:
+
+    pip install ".[samplers]"
+    pip install ".[hoenig]"
+
+### Editable installation
+
+If you plan to modify the code, install the package in editable mode. The build tools have to be 
+installed first and must stay in the environment, because they are used again at import time:
+
+    pip install meson-python ninja cython numpy
+    pip install --no-build-isolation -e .
+
+Changes to the Python files take effect immediately, and the Fortran and Cython sources are 
+recompiled automatically the next time the package is imported. Compiled files are placed in `build/`.
 
 ## Hoenig models
 The disc+wind models of Hoenig & Kishimoto (2017) are implemented via a neural network. To use these models, you
