@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.special as sp
 from scipy.stats import norm
+from scipy.integrate import trapezoid
 import matplotlib.pyplot as pl
 
 # Gaussian Process Regression with Censored Data Using
@@ -25,5 +26,5 @@ fig, ax = pl.subplots()
 cdf = norm.cdf((l - f) / s)
 ax.plot(f, cdf)
 
-print(np.trapezoid(cdf, f))
-print(np.trapezoid(cdf[0:n//2], f[0:n//2]) / np.trapezoid(cdf, f))
+print(trapezoid(cdf, f))
+print(trapezoid(cdf[0:n//2], f[0:n//2]) / trapezoid(cdf, f))

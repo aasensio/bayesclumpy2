@@ -3,6 +3,7 @@ from scipy.stats import truncnorm, uniform
 import re
 from scipy.io import FortranFile
 from scipy.interpolate import RegularGridInterpolator
+from scipy.integrate import trapezoid
 from .tools import tobool
 from .codes import nenkova
 
@@ -468,7 +469,7 @@ class Models(object):
             sed_filter = np.interp(self.obs.transmission[i][0, :], self.base_wavelength * (1.0 + x[-1]), sed)
 
             # Compute flux in the filter (the filter is already normalized to unit area)
-            syn_flux = np.trapezoid(sed_filter * self.obs.transmission[i][1, :], self.obs.transmission[i][0, :])
+            syn_flux = trapezoid(sed_filter * self.obs.transmission[i][1, :], self.obs.transmission[i][0, :])
         
             chi2 += (self.obs.obs_flux[i] - syn_flux)**2 / self.obs.obs_sigma[i]**2
         
